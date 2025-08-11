@@ -1,5 +1,5 @@
 # _________________________________________________________________________
-# 01-import-data.R
+# 01-import-dataxx.R
 # _________________________________________________________________________
 # August 2025
 # Setup script: Read and combine temperature data from CSV parts, clean data,
@@ -67,64 +67,30 @@ head(max_data %>% select(site, summer_year, date, temperature, mean_15day_temp))
 max_data_summer <- max_data %>%
   filter(!is.na(dos) & !is.na(summer_year))
 
+
 # building reference distribution -----------------------------------------
 reference_years <- 1981:2020
-reference_distribution <- max_data_summer %>%
-  filter(summer_year %in% reference_years) %>%
+reference_distribution_temp <- max_data %>%
+  filter(!is.na(dos), !is.na(summer_year), summer_year %in% reference_years) %>%
   group_by(site, dos) %>%
   summarise(
-    ref_values = list(mean_15day_temp),
+    ref_temp_values = list(temperature),
     .groups = "drop"
   )
 
+
 # joining reference distribution ------------------------------------------
-max_data_summer <- max_data_summer %>%
-  left_join(reference_distribution, by = c("site", "dos"))
-
-
-# creating percentile rank ------------------------------------------------
-max_data_summer <- max_data_summer %>%
-  mutate(percentile_against_ref = map2_dbl(mean_15day_temp, ref_values, function(val, ref) {
-    if (is.na(val) || length(ref) < 10) return(NA_real_)  
+max_data_summer <- max_data %>%
+  filter(!is.na(dos) & !is.na(summer_year)) %>%
+  left_join(reference_distribution_temp, by = c("site", "dos")) %>%
+  mutate(
+    percentile_daily_temp = map2_dbl(temperature, ref_temp_values, function(val, ref) {
+      if (is.na(val) || length(ref[!is.na(ref)]) < 10) return(NA_real_)
       ecdf(ref)(val) * 100
     })
-  ) 
+  )
 
-# percentile checks -------------------------------------------------------
-summary(max_data_summer$percentile_against_ref) #Min, max and quartiles are in the right places
-hist(max_data_summer$percentile_against_ref, breaks = 30,
-     main = "Histogram of Percentiles Against Reference",
-     xlab = "Percentile")
-sum(is.na(max_data_summer$percentile_against_ref)) #0 Nas
+# reference distribution checks -------------------------------------------
+summary(max_data_summer$percentile_daily_temp)
+sum(is.na(max_data_summer$percentile_daily_temp))
 
-  #spot check
-row_example <- max_data_summer %>% filter(!is.na(percentile_against_ref)) %>% slice(1)
-val <- row_example$mean_15day_temp
-ref <- row_example$ref_values[[1]]
-manual_percentile <- ecdf(ref)(val) * 100
-print(manual_percentile)
-print(row_example$percentile_against_ref)
-  #manual and percentile_against_ref are the same. 
-
-  #ploting percentiles
-ggplot(max_data_summer %>% filter(!is.na(percentile_against_ref)), 
-       aes(x = mean_15day_temp, y = percentile_against_ref)) +
-  geom_point(alpha = 0.3) +
-  geom_smooth(method = "loess") +
-  labs(title = "Temperature vs Percentile Against Reference",
-       x = "15-day mean temperature",
-       y = "Percentile against reference") +
-  theme_minimal()
-
-  #could try validating with known events or extremes
-known_extremes <- tibble(
-  site = c("SiteA", "SiteB", "SiteC"),
-  date = as.Date(c("2009-02-15", "2017-01-25", "1998-12-20"))
-)
-  #joining 
-extreme_events_data <- known_extremes %>%
-  left_join(summer_max_data, by = c("site", "date"))
-
-  #inspecting 
-extreme_events_data %>%
-  select(site, date, mean_15day_temp, percentile_against_ref)
