@@ -1,8 +1,8 @@
 # _________________________________________________________________________
-# 00-setup.R
+# 00-setupxx.R
 # _________________________________________________________________________
 # August 2025
-# Setup script: clear environment, set working directory, load librabires 
+# Setup script, clear environment, set working directory, load packages 
 # _________________________________________________________________________
 
 #rm(list = ls())
