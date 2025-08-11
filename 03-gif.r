@@ -9,7 +9,7 @@
 discrete_gif_output_folder <- "C:/Users/morga/OneDrive - The University of Waikato/Directed Study/Heat Maps/Discrete"
 
 # Save each discrete daily plot
-for (year in sort(unique(max_data_summer$summer_year))) {
+for (year in sort(unique(max_data_summer$summer_year[max_data_summer$summer_year != 2023]))) {
   p <- plot_percentile_heatmap_discrete_daily(max_data_summer, year)
   ggsave(
     filename = file.path(discrete_gif_output_folder,
@@ -38,7 +38,7 @@ image_write(animation_discrete,
 extreme_gif_output_folder <- "C:/Users/morga/OneDrive - The University of Waikato/Directed Study/Heat Maps/Extreme"
 
 # Save each extreme daily plot
-for (year in sort(unique(max_data_summer$summer_year))) {
+for (year in sort(unique(max_data_summer$summer_year[max_data_summer$summer_year != 2023]))) {
   p <- plot_extreme_heatmap_daily(max_data_summer, year)
   ggsave(
     filename = file.path(extreme_gif_output_folder,
@@ -62,3 +62,4 @@ animation_extreme <- image_animate(image_join(img_list_extreme), fps = 2)
 image_write(animation_extreme,
             path = file.path(extreme_gif_output_folder,
                              "extreme_heatmap_daily.gif"))
+
