@@ -27,7 +27,7 @@ frames_discrete <- list.files(discrete_gif_output_folder,
 frames_discrete <- sort(frames_discrete)
 
 img_list_discrete <- image_read(frames_discrete)
-animation_discrete <- image_animate(image_join(img_list_discrete), fps = 2)
+animation_discrete <- image_animate(image_join(img_list_discrete), fps = 1)
 
 # Save discrete daily GIF
 image_write(animation_discrete,
@@ -56,7 +56,7 @@ frames_extreme <- list.files(extreme_gif_output_folder,
 frames_extreme <- sort(frames_extreme)
 
 img_list_extreme <- image_read(frames_extreme)
-animation_extreme <- image_animate(image_join(img_list_extreme), fps = 2)
+animation_extreme <- image_animate(image_join(img_list_extreme), fps = 1)
 
 # Save extreme daily GIF
 image_write(animation_extreme,
